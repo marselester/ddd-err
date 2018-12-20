@@ -77,7 +77,7 @@ func decodeFindUserByIDReq(_ context.Context, r *http.Request) (interface{}, err
 // When an entity ID is invalid, 404 status code is returned and the domain error is suppressed.
 // A service returns Error (business-logic error) that is shown to API client as is.
 // Other service errors, e.g., DB connection error, must not be shown to API clients,
-// they must not see what exactly went wrong on a server side (500 code suffice).
+// they must not see what exactly went wrong on a server side (500 code should suffice).
 func encodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 

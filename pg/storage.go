@@ -1,3 +1,4 @@
+// Package pg provides Postgres based UserStorage implementation.
 package pg
 
 import (
