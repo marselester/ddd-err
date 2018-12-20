@@ -3,8 +3,9 @@
 [![Documentation](https://godoc.org/github.com/marselester/ddd-err?status.svg)](https://godoc.org/github.com/marselester/ddd-err)
 [![Go Report Card](https://goreportcard.com/badge/github.com/marselester/ddd-err)](https://goreportcard.com/report/github.com/marselester/ddd-err)
 
-This small project is an error handling example based on Ben Johnson's article.
-Based on https://middlemost.com/failure-is-your-domain/ error can be:
+This small project is an error handling example based on Ben Johnson's
+[Failure is your Domain](https://middlemost.com/failure-is-your-domain/).
+According to the article there are:
 
 - well-defined errors. These allow us to manage our application flow
   because we know what to expect and can work with them on a case-by-case basis.
