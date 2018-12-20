@@ -3,6 +3,7 @@ package api
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/go-kit/kit/log"
 	"github.com/google/uuid"
@@ -29,19 +30,19 @@ func (s *service) FindUserByID(ctx context.Context, id string) (*account.User, e
 	return s.db.FindUserByID(ctx, userID.String())
 }
 
+var validUsername = regexp.MustCompile(`^[A-z0-9]$`)
+
 // CreateUser creates a new user in the system.
 // It returns EInvalidUsername if the username is blank or
 // EConflict if the username is already in use.
 func (s *service) CreateUser(ctx context.Context, u *account.User) error {
-	// Validate username is non-blank.
-	if u.Username == "" {
+	if !validUsername.MatchString(u.Username) {
 		return &account.Error{
 			Code:    account.EInvalidUsername,
-			Message: "Username is required.",
+			Message: "Username is invalid.",
 		}
 	}
 
-	// Verify user does not already exist.
 	if s.db.UsernameInUse(ctx, u.Username) {
 		return &account.Error{
 			Code:    account.EConflict,
