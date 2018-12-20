@@ -30,7 +30,7 @@ func (s *service) FindUserByID(ctx context.Context, id string) (*account.User, e
 	return s.db.FindUserByID(ctx, userID.String())
 }
 
-var validUsername = regexp.MustCompile(`^[A-z0-9]$`)
+var validUsername = regexp.MustCompile(`^[A-z0-9]+$`)
 
 // CreateUser creates a new user in the system.
 // It returns EInvalidUsername if the username is blank or
