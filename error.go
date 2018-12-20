@@ -8,26 +8,28 @@ import (
 // Application error codes.
 const (
 	// Action cannot be performed.
-	ECONFLICT = "conflict"
+	EConflict = "conflict"
 	// Internal error.
-	EINTERNAL = "internal"
-	// Validation failed.
-	EINVALID = "invalid"
+	EInternal = "internal"
 	// Entity does not exist.
-	ENOTFOUND = "not_found"
+	ENotFound = "not_found"
+	// User ID validation failed.
+	EInvalidUserID = "invalid_user_id"
+	// Username validation failed.
+	EInvalidUsername = "invalid_username"
 )
 
 // Error defines a standard application error.
 type Error struct {
 	// Code is a machine-readable error code.
-	Code string
+	Code string `json:"code"`
 
 	// Message is a human-readable message.
-	Message string
+	Message string `json:"message"`
 
 	// Logical operation and nested error.
-	Op  string
-	Err error
+	Op  string `json:"-"`
+	Err error  `json:"-"`
 }
 
 // Error returns the string representation of the error message.
@@ -53,7 +55,7 @@ func (e *Error) Error() string {
 	return buf.String()
 }
 
-// ErrorCode returns the code of the root error, if available. Otherwise returns EINTERNAL.
+// ErrorCode returns the code of the root error, if available. Otherwise returns EInternal.
 func ErrorCode(err error) string {
 	if err == nil {
 		return ""
@@ -63,7 +65,7 @@ func ErrorCode(err error) string {
 	} else if ok && e.Err != nil {
 		return ErrorCode(e.Err)
 	}
-	return EINTERNAL
+	return EInternal
 }
 
 // ErrorMessage returns the human-readable message of the error, if available.

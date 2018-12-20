@@ -11,12 +11,12 @@ type storage struct {
 	db *sql.DB
 }
 
-// NewStorage returns a UserStorage backed by Postgres.
-func NewStorage() account.UserStorage {
+// NewUserStorage returns a UserStorage backed by Postgres.
+func NewUserStorage() account.UserStorage {
 	return &storage{}
 }
 
-// FindUserByID returns a user by ID. Returns ENOTFOUND if user does not exist.
+// FindUserByID returns a user by ID. Returns ENotFound if user does not exist.
 func (s *storage) FindUserByID(ctx context.Context, id string) (*account.User, error) {
 	u := account.User{}
 	err := s.db.QueryRowContext(ctx, "SELECT id, username FROM users WHERE id = $1", id).Scan(
@@ -24,7 +24,10 @@ func (s *storage) FindUserByID(ctx context.Context, id string) (*account.User, e
 		&u.Username,
 	)
 	if err == sql.ErrNoRows {
-		return nil, &account.Error{Code: account.ENOTFOUND}
+		return nil, &account.Error{
+			Code:    account.ENotFound,
+			Message: "User not found.",
+		}
 	}
 	return &u, err
 }
