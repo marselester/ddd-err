@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 
-	"github.com/marselester/ddd-err"
+	account "github.com/marselester/ddd-err"
 )
 
 // NewLoggingMiddleware makes a logging middleware for UserService that

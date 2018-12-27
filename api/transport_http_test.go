@@ -11,7 +11,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 
-	"github.com/marselester/ddd-err"
+	account "github.com/marselester/ddd-err"
 	"github.com/marselester/ddd-err/api"
 	"github.com/marselester/ddd-err/mock"
 )
@@ -36,9 +36,9 @@ func TestUserService_ratelimit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := ""
+	want := `{"error":{"code":"rate_limit","message":"API rate limit exceeded."}}` + "\n"
 	if string(body) != want {
-		t.Fatalf("FindUserByID body: %q, want %q", body, want)
+		t.Fatalf("FindUserByID body %s, want %s", body, want)
 	}
 }
 
@@ -61,9 +61,9 @@ func TestUserService_FindUserByID_notfound(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := ""
+	want := `{"error":{"code":"invalid_user_id","message":"Invalid user ID."}}` + "\n"
 	if string(body) != want {
-		t.Fatalf("FindUserByID body: %q, want %q", body, want)
+		t.Fatalf("FindUserByID body %s, want %s", body, want)
 	}
 }
 
@@ -120,7 +120,7 @@ func TestUserService_CreateUser_validation(t *testing.T) {
 			t.Fatal(err)
 		}
 		if string(body) != tc.want {
-			t.Fatalf("CreateUser body: %s, want %s", body, tc.want)
+			t.Fatalf("CreateUser body %s, want %s", body, tc.want)
 		}
 	}
 }
@@ -155,8 +155,8 @@ func TestUserService_CreateUser_dberror(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := ""
+	want := `{"error":{"code":"internal","message":"An internal error has occurred."}}` + "\n"
 	if string(body) != want {
-		t.Fatalf("CreateUser body: %q, want %q", body, want)
+		t.Fatalf("CreateUser body %s, want %s", body, want)
 	}
 }

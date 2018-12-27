@@ -8,7 +8,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/google/uuid"
 
-	"github.com/marselester/ddd-err"
+	account "github.com/marselester/ddd-err"
 )
 
 type service struct {

@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/mux"
 	"golang.org/x/time/rate"
 
-	"github.com/marselester/ddd-err"
+	account "github.com/marselester/ddd-err"
 )
 
 // NewHTTPHandler attaches service API endpoints to HTTP routes in REST-style fashion.
@@ -55,26 +55,25 @@ func NewHTTPHandler(s account.UserService, logger log.Logger, qps int) http.Hand
 	return r
 }
 
-// decodeCreateUserReq converts HTTP request into service-domain request object createUserReq.
+// decodeCreateUserReq converts HTTP request into service-domain request object CreateUserReq.
 // Its error (e.g., json) is converted into HTTP response by encodeError.
 func decodeCreateUserReq(_ context.Context, r *http.Request) (interface{}, error) {
-	var request createUserReq
+	var request CreateUserReq
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err
 	}
 	return request, nil
 }
 
-// decodeFindUserByIDReq converts HTTP request into service-domain request object findUserByIDReq.
+// decodeFindUserByIDReq converts HTTP request into service-domain request object FindUserByIDReq.
 func decodeFindUserByIDReq(_ context.Context, r *http.Request) (interface{}, error) {
 	vars := mux.Vars(r)
-	request := findUserByIDReq{ID: vars["user_id"]}
+	request := FindUserByIDReq{ID: vars["user_id"]}
 	return request, nil
 }
 
-// encodeResponse converts any service-domain response object, such as createUserResp,
+// encodeResponse converts any service-domain response object, such as CreateUserResp,
 // into HTTP response. Its error (e.g., json) is converted into HTTP response by encodeError.
-// When an entity ID is invalid, 404 status code is returned and the domain error is suppressed.
 // A service returns Error (business-logic error) that is shown to API client as is.
 // Other service errors, e.g., DB connection error, must not be shown to API clients,
 // they must not see what exactly went wrong on a server side (500 code should suffice).
@@ -82,28 +81,47 @@ func encodeResponse(_ context.Context, w http.ResponseWriter, response interface
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	if resp, ok := response.(endpoint.Failer); ok && resp.Failed() != nil {
-		switch account.ErrorCode(resp.Failed()) {
+		err := resp.Failed()
+
+		switch account.ErrorCode(err) {
 		case account.ENotFound, account.EInvalidUserID:
 			w.WriteHeader(http.StatusNotFound)
-			return nil
 		case account.EInternal:
 			w.WriteHeader(http.StatusInternalServerError)
-			return nil
+			response = struct {
+				Err *account.Error `json:"error"`
+			}{&account.Error{
+				Code:    account.ErrorCode(err),
+				Message: account.ErrorMessage(err),
+			}}
+		default:
+			w.WriteHeader(http.StatusBadRequest)
 		}
-
-		w.WriteHeader(http.StatusBadRequest)
 	}
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-// encodeError converts errors returned by Endpoint, its middleware (e.g., ratelimit),
+// encodeError converts errors returned by endpoint.Endpoint, its middleware (e.g., ratelimit),
 // request decoder/response encoder (JSON serialization errors, e.g., EOF) into HTTP response.
 // Business logic errors are not sent here.
 func encodeError(_ context.Context, err error, w http.ResponseWriter) {
+	errResp := struct {
+		Err *account.Error `json:"error"`
+	}{&account.Error{
+		Code:    account.ErrorCode(err),
+		Message: account.ErrorMessage(err),
+	}}
+
 	if err == ratelimit.ErrLimited {
 		w.WriteHeader(http.StatusTooManyRequests)
-		return
+		errResp.Err = &account.Error{
+			Code:    account.ERateLimit,
+			Message: "API rate limit exceeded.",
+		}
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
 	}
-	w.WriteHeader(http.StatusInternalServerError)
+
+	json.NewEncoder(w).Encode(&errResp)
 }

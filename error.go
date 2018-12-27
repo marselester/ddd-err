@@ -13,6 +13,8 @@ const (
 	EInternal = "internal"
 	// Entity does not exist.
 	ENotFound = "not_found"
+	// Too many API requests.
+	ERateLimit = "rate_limit"
 	// User ID validation failed.
 	EInvalidUserID = "invalid_user_id"
 	// Username validation failed.
@@ -79,5 +81,5 @@ func ErrorMessage(err error) string {
 	} else if ok && e.Err != nil {
 		return ErrorMessage(e.Err)
 	}
-	return "An internal error has occurred. Please contact technical support."
+	return "An internal error has occurred."
 }

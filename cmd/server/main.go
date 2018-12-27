@@ -14,7 +14,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/oklog/run"
 
-	"github.com/marselester/ddd-err"
+	account "github.com/marselester/ddd-err"
 	"github.com/marselester/ddd-err/api"
 	"github.com/marselester/ddd-err/mock"
 )

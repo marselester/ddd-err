@@ -5,7 +5,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/marselester/ddd-err"
+	account "github.com/marselester/ddd-err"
 )
 
 type storage struct {

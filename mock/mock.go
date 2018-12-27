@@ -4,7 +4,7 @@ package mock
 import (
 	"context"
 
-	"github.com/marselester/ddd-err"
+	account "github.com/marselester/ddd-err"
 )
 
 // UserService is a mock that implements account.UserService.

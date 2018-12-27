@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/go-kit/kit/log"
 
-	"github.com/marselester/ddd-err"
+	account "github.com/marselester/ddd-err"
 )
 
 // NewService configures new UserService that manages user accounts.
