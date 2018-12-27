@@ -58,18 +58,18 @@ func NewHTTPHandler(s account.UserService, logger log.Logger, qps int) http.Hand
 // decodeCreateUserReq converts HTTP request into service-domain request object CreateUserReq.
 // Its error (e.g., json) is converted into HTTP response by encodeError.
 func decodeCreateUserReq(_ context.Context, r *http.Request) (interface{}, error) {
-	var request CreateUserReq
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+	var req CreateUserReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, err
 	}
-	return request, nil
+	return req, nil
 }
 
 // decodeFindUserByIDReq converts HTTP request into service-domain request object FindUserByIDReq.
 func decodeFindUserByIDReq(_ context.Context, r *http.Request) (interface{}, error) {
 	vars := mux.Vars(r)
-	request := FindUserByIDReq{ID: vars["user_id"]}
-	return request, nil
+	req := FindUserByIDReq{ID: vars["user_id"]}
+	return req, nil
 }
 
 // encodeResponse converts any service-domain response object, such as CreateUserResp,
