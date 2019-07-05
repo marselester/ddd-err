@@ -27,7 +27,7 @@ func (s *service) FindUserByID(ctx context.Context, id string) (*account.User, e
 		}
 	}
 
-	return s.db.FindUserByID(ctx, userID.String())
+	return s.db.FindUserByID(ctx, nil, userID.String())
 }
 
 var validUsername = regexp.MustCompile(`^[A-z0-9]+$`)

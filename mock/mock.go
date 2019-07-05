@@ -3,6 +3,7 @@ package mock
 
 import (
 	"context"
+	"database/sql"
 
 	account "github.com/marselester/ddd-err"
 )
@@ -31,17 +32,18 @@ func (s *UserService) CreateUser(ctx context.Context, user *account.User) error 
 
 // UserStorage is a mock that implements account.UserStorage.
 type UserStorage struct {
-	FindUserByIDFn  func(ctx context.Context, id string) (*account.User, error)
+	FindUserByIDFn  func(ctx context.Context, dbtx *sql.Tx, id string) (*account.User, error)
 	UsernameInUseFn func(ctx context.Context, username string) bool
 	CreateUserFn    func(ctx context.Context, user *account.User) error
+	UpdateUserFn    func(ctx context.Context, dbtx *sql.Tx, user *account.User) error
 }
 
 // FindUserByID calls FindUserByIDFn for tests to inspect the mock.
-func (s *UserStorage) FindUserByID(ctx context.Context, id string) (*account.User, error) {
+func (s *UserStorage) FindUserByID(ctx context.Context, dbtx *sql.Tx, id string) (*account.User, error) {
 	if s.FindUserByIDFn == nil {
 		return &account.User{}, nil
 	}
-	return s.FindUserByIDFn(ctx, id)
+	return s.FindUserByIDFn(ctx, dbtx, id)
 }
 
 // UsernameInUse calls UsernameInUseFn for tests to inspect the mock.
@@ -58,4 +60,12 @@ func (s *UserStorage) CreateUser(ctx context.Context, user *account.User) error 
 		return nil
 	}
 	return s.CreateUserFn(ctx, user)
+}
+
+// UpdateUser calls UpdateUserFn for tests to inspect the mock.
+func (s *UserStorage) UpdateUser(ctx context.Context, dbtx *sql.Tx, user *account.User) error {
+	if s.UpdateUserFn == nil {
+		return nil
+	}
+	return s.UpdateUserFn(ctx, dbtx, user)
 }
