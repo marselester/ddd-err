@@ -114,3 +114,12 @@ The error was also logged for operators:
   "ts": "2018-12-20T13:49:12.333333Z"
 }
 ```
+
+## Testing
+
+To run tests you will need Postgres and test env variables set up.
+
+```sh
+$ make docker_run_postgres
+$ make test
+```
