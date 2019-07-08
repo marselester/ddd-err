@@ -80,13 +80,14 @@ func (c *Client) Transact(ctx context.Context, atomic func(*sql.Tx) error) (err 
 		if p := recover(); p != nil {
 			tx.Rollback()
 			panic(p)
-		} else if err != nil {
-			// err is non-nil; don't change it.
-			tx.Rollback()
-		} else {
-			// err is nil; if Commit returns error, update err.
-			err = tx.Commit()
 		}
+		// err is not nil; don't change it.
+		if err != nil {
+			tx.Rollback()
+			return
+		}
+		// err is nil; if Commit returns error, update err.
+		err = tx.Commit()
 	}()
 
 	err = atomic(tx)
