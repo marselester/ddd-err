@@ -16,7 +16,7 @@ type client struct {
 	// sysConn is a connection to "postgres" db to drop/create a test db.
 	sysConn *pgx.Conn
 
-	user *UserStorage
+	storageClient *Client
 }
 
 // newClient returns configured test client.
@@ -30,7 +30,7 @@ func newClient() (*client, error) {
 	c := client{
 		connConfig: config,
 
-		user: NewUserStorage(
+		storageClient: NewClient(
 			WithHost(config.Host),
 			WithPort(config.Port),
 			WithDatabase(config.Database),
@@ -64,12 +64,12 @@ func (c *client) open() error {
 		return err
 	}
 
-	return c.user.Open()
+	return c.storageClient.Open()
 }
 
 // close closes client and drops the test database.
 func (c *client) close() {
-	c.user.Close()
+	c.storageClient.Close()
 	c.conn.Close()
 
 	c.sysConn.Exec("DROP DATABASE IF EXISTS " + c.connConfig.Database)
