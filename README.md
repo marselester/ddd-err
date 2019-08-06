@@ -123,3 +123,9 @@ To run tests you will need Postgres and test env variables set up.
 $ make docker_run_postgres
 $ make test
 ```
+
+If tests fail with "connection refused", point `TEST_PGHOST` to a default docker machine.
+
+```sh
+$ make test TEST_PGHOST=$(docker-machine ip default)
+```

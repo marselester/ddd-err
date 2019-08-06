@@ -61,3 +61,8 @@ func (s *UserStorage) UpdateUser(ctx context.Context, dbtx *sql.Tx, u *account.U
 	}
 	return nil
 }
+
+// Transact relies on Client to implement a Storage interface to keep the Postgres client private.
+func (s *UserStorage) Transact(ctx context.Context, atomic func(*sql.Tx) error) (err error) {
+	return s.client.Transact(ctx, atomic)
+}

@@ -8,7 +8,7 @@ import (
 
 // NewService configures new UserService that manages user accounts.
 // You must provide a repository where users are stored.
-func NewService(db account.UserStorage, options ...ConfigOption) account.UserService {
+func NewService(db account.UserRepository, options ...ConfigOption) account.UserService {
 	s := service{
 		logger: log.NewNopLogger(),
 		db:     db,

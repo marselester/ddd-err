@@ -13,7 +13,7 @@ import (
 
 type service struct {
 	logger log.Logger
-	db     account.UserStorage
+	db     account.UserRepository
 }
 
 // FindUserByID returns a user by its ID.
