@@ -8,8 +8,8 @@ import (
 	account "github.com/marselester/ddd-err"
 )
 
-// Ensure UserStorage implements account.UserStorage.
-var _ account.UserStorage = &UserStorage{}
+// Ensure UserStorage implements account.UserRepository.
+var _ account.UserRepository = &UserStorage{}
 
 func TestTransact(t *testing.T) {
 	c := mustOpenClient()

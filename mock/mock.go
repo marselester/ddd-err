@@ -30,8 +30,22 @@ func (s *UserService) CreateUser(ctx context.Context, user *account.User) error 
 	return s.CreateUserFn(ctx, user)
 }
 
-// UserStorage is a mock that implements account.UserStorage.
+// Storage is a mock that implements account.Storage.
+type Storage struct {
+	TransactFn func(ctx context.Context, atomic func(*sql.Tx) error) error
+}
+
+// Transact calls TransactFn for tests to inspect the mock.
+func (s *Storage) Transact(ctx context.Context, atomic func(*sql.Tx) error) (err error) {
+	if s.TransactFn == nil {
+		return atomic(nil)
+	}
+	return s.TransactFn(ctx, atomic)
+}
+
+// UserStorage is a mock that implements account.UserRepository.
 type UserStorage struct {
+	Storage
 	FindUserByIDFn  func(ctx context.Context, dbtx *sql.Tx, id string) (*account.User, error)
 	UsernameInUseFn func(ctx context.Context, username string) bool
 	CreateUserFn    func(ctx context.Context, user *account.User) error
@@ -68,4 +82,18 @@ func (s *UserStorage) UpdateUser(ctx context.Context, dbtx *sql.Tx, user *accoun
 		return nil
 	}
 	return s.UpdateUserFn(ctx, dbtx, user)
+}
+
+// GroupStorage is a mock that implements account.GroupRepository.
+type GroupStorage struct {
+	Storage
+	CreateGroupFn func(ctx context.Context, dbtx *sql.Tx, group *account.Group) error
+}
+
+// CreateGroup calls CreateGroupFn for tests to inspect the mock.
+func (s *GroupStorage) CreateGroup(ctx context.Context, dbtx *sql.Tx, group *account.Group) error {
+	if s.CreateGroupFn == nil {
+		return nil
+	}
+	return s.CreateGroupFn(ctx, dbtx, group)
 }
