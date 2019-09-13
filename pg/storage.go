@@ -4,6 +4,8 @@ package pg
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"errors"
 
 	// pgx driver registers itself as being available to the database/sql package.
 	_ "github.com/jackc/pgx/stdlib"
@@ -28,7 +30,7 @@ func (s *UserStorage) FindUserByID(ctx context.Context, dbtx *sql.Tx, id string)
 
 	u := account.User{}
 	err := row.Scan(&u.ID, &u.Username)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, &account.Error{
 			Code:    account.ENotFound,
 			Message: "User not found.",
@@ -44,20 +46,18 @@ func (s *UserStorage) UsernameInUse(ctx context.Context, username string) bool {
 
 // CreateUser creates a new user in the storage.
 func (s *UserStorage) CreateUser(ctx context.Context, u *account.User) error {
-	const op = "UserStorage.CreateUser"
 	_, err := s.client.db.ExecContext(ctx, "INSERT INTO account (id, username) VALUES ($1, $2)", u.ID, u.Username)
 	if err != nil {
-		return &account.Error{Op: op, Err: err}
+		return fmt.Errorf("UserStorage.CreateUser: %w", err)
 	}
 	return nil
 }
 
 // UpdateUser updates user details within a db transaction.
 func (s *UserStorage) UpdateUser(ctx context.Context, dbtx *sql.Tx, u *account.User) error {
-	const op = "UserStorage.UpdateUser"
 	_, err := dbtx.ExecContext(ctx, "UPDATE account SET username=$2 WHERE id=$1", u.ID, u.Username)
 	if err != nil {
-		return &account.Error{Op: op, Err: err}
+		return fmt.Errorf("UserStorage.UpdateUser: %w", err)
 	}
 	return nil
 }

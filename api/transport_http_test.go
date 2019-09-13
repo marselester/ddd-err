@@ -2,6 +2,7 @@ package api_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -131,10 +132,7 @@ func TestUserService_CreateUser_dberror(t *testing.T) {
 			return false
 		},
 		CreateUserFn: func(ctx context.Context, user *account.User) error {
-			return &account.Error{
-				Op:  "UserStorage.CreateUser",
-				Err: fmt.Errorf("db connection failed"),
-			}
+			return fmt.Errorf("UserStorage.CreateUser: %w", errors.New("db connection failed"))
 		},
 	})
 	h := api.NewHTTPHandler(s, log.NewNopLogger(), 100)

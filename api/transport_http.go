@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"time"
 
@@ -82,18 +83,22 @@ func encodeResponse(_ context.Context, w http.ResponseWriter, response interface
 
 	if resp, ok := response.(endpoint.Failer); ok && resp.Failed() != nil {
 		err := resp.Failed()
+		var accErr *account.Error
+		if !errors.As(err, &accErr) {
+			accErr = &account.Error{
+				Code:    account.EInternal,
+				Message: "An internal error has occurred.",
+			}
+		}
 
-		switch account.ErrorCode(err) {
+		switch accErr.Code {
 		case account.ENotFound, account.EInvalidUserID:
 			w.WriteHeader(http.StatusNotFound)
 		case account.EInternal:
 			w.WriteHeader(http.StatusInternalServerError)
 			response = struct {
 				Err *account.Error `json:"error"`
-			}{&account.Error{
-				Code:    account.ErrorCode(err),
-				Message: account.ErrorMessage(err),
-			}}
+			}{accErr}
 		default:
 			w.WriteHeader(http.StatusBadRequest)
 		}
@@ -109,11 +114,11 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	errResp := struct {
 		Err *account.Error `json:"error"`
 	}{&account.Error{
-		Code:    account.ErrorCode(err),
-		Message: account.ErrorMessage(err),
+		Code:    account.EInternal,
+		Message: "An internal error has occurred.",
 	}}
 
-	if err == ratelimit.ErrLimited {
+	if errors.Is(err, ratelimit.ErrLimited) {
 		w.WriteHeader(http.StatusTooManyRequests)
 		errResp.Err = &account.Error{
 			Code:    account.ERateLimit,
