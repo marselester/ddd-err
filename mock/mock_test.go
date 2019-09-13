@@ -13,7 +13,7 @@ import (
 // TestStorageTransact is a dummy example of mocking a service, repository and db transaction.
 func TestStorageTransact(t *testing.T) {
 	userRepo := UserStorage{FindUserByIDFn: func(_ context.Context, _ *sql.Tx, _ string) (*account.User, error) {
-		return nil, &account.Error{
+		return nil, account.Error{
 			Code:    account.ENotFound,
 			Message: "User not found.",
 		}
@@ -24,7 +24,7 @@ func TestStorageTransact(t *testing.T) {
 		err := userRepo.Transact(ctx, func(tx *sql.Tx) error {
 			_, err := userRepo.FindUserByID(ctx, tx, user.ID)
 			if account.ErrorCode(err) != account.ENotFound {
-				return &account.Error{
+				return account.Error{
 					Code:    "shoe_fell_off",
 					Message: "Username is already in use. Please choose a different username.",
 				}

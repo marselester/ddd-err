@@ -83,9 +83,9 @@ func encodeResponse(_ context.Context, w http.ResponseWriter, response interface
 
 	if resp, ok := response.(endpoint.Failer); ok && resp.Failed() != nil {
 		err := resp.Failed()
-		var accErr *account.Error
+		var accErr account.Error
 		if !errors.As(err, &accErr) {
-			accErr = &account.Error{
+			accErr = account.Error{
 				Code:    account.EInternal,
 				Message: "An internal error has occurred.",
 			}
@@ -97,7 +97,7 @@ func encodeResponse(_ context.Context, w http.ResponseWriter, response interface
 		case account.EInternal:
 			w.WriteHeader(http.StatusInternalServerError)
 			response = struct {
-				Err *account.Error `json:"error"`
+				Err account.Error `json:"error"`
 			}{accErr}
 		default:
 			w.WriteHeader(http.StatusBadRequest)
@@ -112,15 +112,15 @@ func encodeResponse(_ context.Context, w http.ResponseWriter, response interface
 // Business logic errors are not sent here.
 func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	errResp := struct {
-		Err *account.Error `json:"error"`
-	}{&account.Error{
+		Err account.Error `json:"error"`
+	}{account.Error{
 		Code:    account.EInternal,
 		Message: "An internal error has occurred.",
 	}}
 
 	if errors.Is(err, ratelimit.ErrLimited) {
 		w.WriteHeader(http.StatusTooManyRequests)
-		errResp.Err = &account.Error{
+		errResp.Err = account.Error{
 			Code:    account.ERateLimit,
 			Message: "API rate limit exceeded.",
 		}

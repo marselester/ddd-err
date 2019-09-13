@@ -21,7 +21,7 @@ type service struct {
 func (s *service) FindUserByID(ctx context.Context, id string) (*account.User, error) {
 	userID, err := uuid.Parse(id)
 	if err != nil {
-		return nil, &account.Error{
+		return nil, account.Error{
 			Code:    account.EInvalidUserID,
 			Message: "Invalid user ID.",
 		}
@@ -37,14 +37,14 @@ var validUsername = regexp.MustCompile(`^[A-z0-9]+$`)
 // EConflict if the username is already in use.
 func (s *service) CreateUser(ctx context.Context, u *account.User) error {
 	if !validUsername.MatchString(u.Username) {
-		return &account.Error{
+		return account.Error{
 			Code:    account.EInvalidUsername,
 			Message: "Username is invalid.",
 		}
 	}
 
 	if s.db.UsernameInUse(ctx, u.Username) {
-		return &account.Error{
+		return account.Error{
 			Code:    account.EConflict,
 			Message: "Username is already in use. Please choose a different username.",
 		}
