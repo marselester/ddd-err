@@ -29,13 +29,13 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-func (e *Error) Error() string {
+func (e Error) Error() string {
 	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
 
 // ErrorCode returns the code of the error, if available.
 func ErrorCode(err error) string {
-	var e *Error
+	var e Error
 	if errors.As(err, &e) {
 		return e.Code
 	}

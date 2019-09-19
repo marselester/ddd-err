@@ -4,8 +4,8 @@ package pg
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"errors"
+	"fmt"
 
 	// pgx driver registers itself as being available to the database/sql package.
 	_ "github.com/jackc/pgx/stdlib"
@@ -31,7 +31,7 @@ func (s *UserStorage) FindUserByID(ctx context.Context, dbtx *sql.Tx, id string)
 	u := account.User{}
 	err := row.Scan(&u.ID, &u.Username)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, &account.Error{
+		return nil, account.Error{
 			Code:    account.ENotFound,
 			Message: "User not found.",
 		}

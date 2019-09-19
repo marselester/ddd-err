@@ -21,7 +21,7 @@ $ go run ./cmd/server/
 Domain errors (API errors) should have `Code` and `Message`. For instance, "duplicate username" error
 
 ```go
-&account.Error{
+account.Error{
 	Code:    account.EConflict,
 	Message: "Username is already in use. Please choose a different username.",
 }
