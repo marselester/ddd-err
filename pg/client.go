@@ -74,7 +74,7 @@ func (c *Client) Transact(ctx context.Context, atomic func(*sql.Tx) error) (err 
 		// Catch panics to ensure a Rollback happens right away.
 		// Under normal circumstances a panic should not occur.
 		// If we did not handle panics, the transaction would be rolled back eventually.
-		// A non-commited transaction gets rolled back by the database when the client disconnects
+		// A non-committed transaction gets rolled back by the database when the client disconnects
 		// or when the transaction gets garbage collected.
 		// It's better to resolve the issue as quickly as possible.
 		if p := recover(); p != nil {

@@ -23,8 +23,12 @@ func TestUserService_ratelimit(t *testing.T) {
 	srv := httptest.NewServer(h)
 	defer srv.Close()
 
-	http.Get(srv.URL + "/v1/users/123")
-	resp, err := http.Get(srv.URL + "/v1/users/456")
+	resp, err := http.Get(srv.URL + "/v1/users/123")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	resp, err = http.Get(srv.URL + "/v1/users/456")
 	if err != nil {
 		t.Fatal(err)
 	}

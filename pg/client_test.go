@@ -96,11 +96,11 @@ func parsePgEnv() (pgx.ConnConfig, error) {
 	}
 
 	if p := os.Getenv("TEST_PGPORT"); p != "" {
-		if port, err := strconv.Atoi(p); err != nil {
+		port, err := strconv.Atoi(p)
+		if err != nil {
 			return config, err
-		} else {
-			config.Port = uint16(port)
 		}
+		config.Port = uint16(port)
 	}
 
 	return config, nil
