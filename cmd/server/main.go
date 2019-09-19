@@ -37,13 +37,13 @@ func main() {
 			return username == "bob"
 		},
 		CreateUserFn: func(ctx context.Context, user *account.User) error {
-			return &account.Error{
-				Op: "UserStorage.CreateUser",
-				Err: &account.Error{
-					Op:  "insertUser",
-					Err: fmt.Errorf("db connection failed"),
-				},
-			}
+			return fmt.Errorf(
+				"UserStorage.CreateUser: %w",
+				fmt.Errorf(
+					"insertUser: %w",
+					fmt.Errorf("db connection failed"),
+				),
+			)
 		},
 	}
 

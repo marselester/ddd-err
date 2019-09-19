@@ -3,7 +3,7 @@
 [![Documentation](https://godoc.org/github.com/marselester/ddd-err?status.svg)](https://godoc.org/github.com/marselester/ddd-err)
 [![Go Report Card](https://goreportcard.com/badge/github.com/marselester/ddd-err)](https://goreportcard.com/report/github.com/marselester/ddd-err)
 
-This is an error handling example based on Ben Johnson's
+This is Go 1.13 error handling example based on Ben Johnson's
 [Failure is your Domain](https://middlemost.com/failure-is-your-domain/).
 According to the article error consumers have different expectations:
 
@@ -52,21 +52,17 @@ and also logged for operators
 }
 ```
 
-Errors are considered internal and not shown to API consumers:
-
-- third-party errors, e.g., `fmt.Errorf("oh no")`
-- `account.Error` with blank `Code` field
-
+Non-domain errors are considered internal and not shown to API consumers.
 For example, db connection error
 
 ```go
-&account.Error{
-	Op: "UserStorage.CreateUser",
-	Err: &account.Error{
-		Op:  "insertUser",
-		Err: fmt.Errorf("db connection failed"),
-	},
-}
+fmt.Errorf(
+	"UserStorage.CreateUser: %w",
+	fmt.Errorf(
+		"insertUser: %w",
+		fmt.Errorf("db connection failed"),
+	),
+)
 ```
 
 is suppressed on API level
