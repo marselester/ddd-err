@@ -111,6 +111,40 @@ The error was also logged for operators:
 }
 ```
 
+Note, it's possible to wrap domain errors, for example,
+
+```go
+err := account.Error{
+	Code:    account.ENotFound,
+	Message: "User not found.",
+	Inner:   sql.ErrNoRows,
+}
+fmt.Errorf("user (id %s) not found: %w", userID, err)
+```
+
+shows the domain error
+
+```sh
+$ curl -i http://localhost:8000/v1/users/87553f14-4c0f-4bd8-8be1-1b6ff5bd8eef
+HTTP/1.1 404 Not Found
+
+{"error":{"code":"not_found","message":"User not found."}}
+```
+
+and logs the full error for operators
+
+```json
+{
+  "caller": "middleware.go:29",
+  "err": "user (id 87553f14-4c0f-4bd8-8be1-1b6ff5bd8eef) not found: not_found: User not found.: sql: no rows in result set",
+  "method": "FindUserByID",
+  "output": null,
+  "took": "26.001µs",
+  "ts": "2019-09-24T14:19:04.632203Z",
+  "user_id": "87553f14-4c0f-4bd8-8be1-1b6ff5bd8eef"
+}
+```
+
 ## Testing
 
 To run tests you will need Postgres and test env variables set up.
