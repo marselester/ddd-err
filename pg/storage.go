@@ -34,6 +34,7 @@ func (s *UserStorage) FindUserByID(ctx context.Context, dbtx *sql.Tx, id string)
 		return nil, account.Error{
 			Code:    account.ENotFound,
 			Message: "User not found.",
+			Inner:   err,
 		}
 	}
 	return &u, err

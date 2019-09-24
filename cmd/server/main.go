@@ -3,6 +3,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"flag"
 	"fmt"
 	"net/http"
@@ -33,6 +34,13 @@ func main() {
 
 	// db helps to emulate storage errors.
 	db := &mock.UserStorage{
+		FindUserByIDFn: func(ctx context.Context, dbtx *sql.Tx, id string) (*account.User, error) {
+			return nil, account.Error{
+				Code:    account.ENotFound,
+				Message: "User not found.",
+				Inner:   sql.ErrNoRows,
+			}
+		},
 		UsernameInUseFn: func(ctx context.Context, username string) bool {
 			return username == "bob"
 		},

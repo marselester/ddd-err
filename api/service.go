@@ -3,6 +3,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 
 	"github.com/go-kit/kit/log"
@@ -27,7 +28,11 @@ func (s *service) FindUserByID(ctx context.Context, id string) (*account.User, e
 		}
 	}
 
-	return s.db.FindUserByID(ctx, nil, userID.String())
+	u, err := s.db.FindUserByID(ctx, nil, userID.String())
+	if err != nil {
+		return nil, fmt.Errorf("user (id %s) not found: %w", userID, err)
+	}
+	return u, nil
 }
 
 var validUsername = regexp.MustCompile(`^[A-z0-9]+$`)
