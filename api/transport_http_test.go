@@ -2,6 +2,7 @@ package api_test
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -47,7 +48,7 @@ func TestUserService_ratelimit(t *testing.T) {
 	}
 }
 
-func TestUserService_FindUserByID_notfound(t *testing.T) {
+func TestUserService_FindUserByID_invalid_user_id(t *testing.T) {
 	s := api.NewService(nil)
 	h := api.NewHTTPHandler(s, log.NewNopLogger(), 100)
 	srv := httptest.NewServer(h)
@@ -67,6 +68,39 @@ func TestUserService_FindUserByID_notfound(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := `{"error":{"code":"invalid_user_id","message":"Invalid user ID."}}` + "\n"
+	if string(body) != want {
+		t.Fatalf("FindUserByID body %s, want %s", body, want)
+	}
+}
+
+func TestUserService_FindUserByID_notfound(t *testing.T) {
+	db := &mock.UserStorage{
+		FindUserByIDFn: func(ctx context.Context, dbtx *sql.Tx, id string) (*account.User, error) {
+			return nil, account.Error{
+				Code:    account.ENotFound,
+				Message: "User not found.",
+				Inner:   sql.ErrNoRows,
+			}
+		}}
+	s := api.NewService(db)
+	h := api.NewHTTPHandler(s, log.NewNopLogger(), 100)
+	srv := httptest.NewServer(h)
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/v1/users/87553f14-4c0f-4bd8-8be1-1b6ff5bd8eef")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("FindUserByID status code: %d, want %d", resp.StatusCode, http.StatusNotFound)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := `{"error":{"code":"not_found","message":"User not found."}}` + "\n"
 	if string(body) != want {
 		t.Fatalf("FindUserByID body %s, want %s", body, want)
 	}

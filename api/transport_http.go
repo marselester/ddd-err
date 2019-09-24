@@ -90,15 +90,15 @@ func encodeResponse(_ context.Context, w http.ResponseWriter, response interface
 				Message: "An internal error has occurred.",
 			}
 		}
+		response = struct {
+			Err account.Error `json:"error"`
+		}{accErr}
 
 		switch accErr.Code {
 		case account.ENotFound, account.EInvalidUserID:
 			w.WriteHeader(http.StatusNotFound)
 		case account.EInternal:
 			w.WriteHeader(http.StatusInternalServerError)
-			response = struct {
-				Err account.Error `json:"error"`
-			}{accErr}
 		default:
 			w.WriteHeader(http.StatusBadRequest)
 		}

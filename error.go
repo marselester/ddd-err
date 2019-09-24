@@ -32,7 +32,10 @@ type Error struct {
 }
 
 func (e Error) Error() string {
-	return fmt.Sprintf("%s %s", e.Code, e.Message)
+	if e.Inner != nil {
+		return fmt.Sprintf("%s: %s: %v", e.Code, e.Message, e.Inner)
+	}
+	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
 
 func (e Error) Unwrap() error {
