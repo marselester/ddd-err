@@ -1,0 +1,43 @@
+syntax = "proto3";
+package ddd_err.account;
+option go_package = "account";
+
+service User {
+  rpc FindUserByID(FindUserByIDReq) returns (FindUserByIDResp);
+  rpc CreateUser(CreateUserReq) returns (CreateUserResp);
+}
+
+message FindUserByIDReq {
+  string id = 1;
+}
+
+message FindUserByIDResp {
+  string id = 1;
+  string username = 2;
+  Error error = 3;
+}
+
+message CreateUserReq {
+  string username = 1;
+}
+
+message CreateUserResp {
+  Error error = 1;
+}
+
+service Group {
+  rpc CreateGroup(CreateGroupReq) returns (CreateGroupResp);
+}
+
+message CreateGroupReq {
+  string name = 1;
+}
+
+message CreateGroupResp {
+  Error error = 1;
+}
+
+message Error {
+  string message = 1;
+  string code = 2;
+}

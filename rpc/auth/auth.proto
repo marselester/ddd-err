@@ -1,0 +1,25 @@
+syntax = "proto3";
+package ddd_auth.auth;
+option go_package = "auth";
+
+service Permission {
+  rpc ListPermissions(ListPermissionReq) returns (ListPermissionResp);
+}
+
+message ListPermissionReq {
+  string user_id = 1;
+}
+
+message ListPermissionResp {
+  message Permission {
+    string name = 1;
+    string codename = 2;
+  }
+  repeated Permission permissions = 1;
+  Error error = 2;
+}
+
+message Error {
+  string message = 1;
+  string code = 2;
+}

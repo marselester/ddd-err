@@ -1,4 +1,4 @@
-// Server exposes REST-style API to manage user accounts.
+// Server exposes REST-style and gRPC API to manage user accounts.
 package main
 
 import (
@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,15 +15,19 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/oklog/run"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	account "github.com/marselester/ddd-err"
 	"github.com/marselester/ddd-err/api"
 	"github.com/marselester/ddd-err/mock"
+	pb "github.com/marselester/ddd-err/rpc/account"
 )
 
 func main() {
 	apiAddr := flag.String("http", ":8000", "HTTP API address")
 	apiQPS := flag.Int("qps", 2, "API requests limit per second")
+	grpcAddr := flag.String("grpc", ":8080", "gRPC API address")
 	flag.Parse()
 
 	var logger log.Logger
@@ -77,6 +82,22 @@ func main() {
 		IdleTimeout:  30 * time.Second,
 	}
 
+	// gRPC API server for creating new users.
+	grpcListener, err := net.Listen("tcp", *grpcAddr)
+	if err != nil {
+		logger.Log("msg", "could not listen to gRPC port", "err", err)
+		os.Exit(1)
+	}
+	grpcserver := grpc.NewServer()
+	pb.RegisterUserServer(
+		grpcserver,
+		api.NewGRPCUserServer(s, logger),
+	)
+	// gRPC reflection provides information about publicly-accessible gRPC services on a server,
+	// and assists clients at runtime to construct RPC requests and responses
+	// without precompiled service information. It is used by grpcurl CLI.
+	reflection.Register(grpcserver)
+
 	ctx, cancel := context.WithCancel(context.Background())
 	var g run.Group
 	{
@@ -99,6 +120,16 @@ func main() {
 			logger.Log("msg", "API server shut down", "err", err)
 		})
 	}
-	err := g.Run()
+	{
+		g.Add(func() error {
+			logger.Log("msg", "gRPC server is starting", "addr", *grpcAddr)
+			return grpcserver.Serve(grpcListener)
+		}, func(err error) {
+			logger.Log("msg", "gRPC server was interrupted", "err", err)
+			err = grpcListener.Close()
+			logger.Log("msg", "gRPC server shut down", "err", err)
+		})
+	}
+	err = g.Run()
 	logger.Log("msg", "actors stopped", "err", err)
 }
