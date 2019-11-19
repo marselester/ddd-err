@@ -24,8 +24,8 @@ func NewGRPCUserServer(s account.UserService, logger log.Logger) pb.UserServer {
 		ep = makeFindUserByIDEndpoint(s)
 		srv.findUserByIDHandler = grpctransport.NewServer(
 			ep,
-			decodeGRPCfindUserByIDReq,
-			encodeGRPCfindUserByIDResp,
+			decodeGRPCFindUserByIDReq,
+			encodeGRPCFindUserByIDResp,
 			options...,
 		)
 	}
@@ -33,8 +33,8 @@ func NewGRPCUserServer(s account.UserService, logger log.Logger) pb.UserServer {
 		ep = makeCreateUserEndpoint(s)
 		srv.createUserHandler = grpctransport.NewServer(
 			ep,
-			decodeGRPCcreateUserReq,
-			encodeGRPCcreateUserResp,
+			decodeGRPCCreateUserReq,
+			encodeGRPCCreateUserResp,
 			options...,
 		)
 	}
@@ -66,16 +66,16 @@ func (srv *userServer) CreateUser(ctx context.Context, req *pb.CreateUserReq) (*
 	return resp.(*pb.CreateUserResp), nil
 }
 
-// decodeGRPCfindUserByIDReq is a transport/grpc.DecodeRequestFunc that converts a
+// decodeGRPCFindUserByIDReq is a transport/grpc.DecodeRequestFunc that converts a
 // gRPC FindUserByIDReq request to a user-domain FindUserByIDReq request.
-func decodeGRPCfindUserByIDReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
+func decodeGRPCFindUserByIDReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	req := grpcReq.(*pb.FindUserByIDReq)
 	return FindUserByIDReq{ID: req.Id}, nil
 }
 
-// encodeGRPCfindUserByIDResp is a transport/grpc.EncodeResponseFunc that converts a
-// user-domain FindUserByIDResp response to a gRPC FindUserByIDResp reply.
-func encodeGRPCfindUserByIDResp(_ context.Context, response interface{}) (interface{}, error) {
+// encodeGRPCFindUserByIDResp is a transport/grpc.EncodeResponseFunc that converts a
+// user-domain FindUserByIDResp response to a gRPC FindUserByIDResp response.
+func encodeGRPCFindUserByIDResp(_ context.Context, response interface{}) (interface{}, error) {
 	resp := response.(FindUserByIDResp)
 	return &pb.FindUserByIDResp{
 		Id:       resp.ID,
@@ -84,16 +84,16 @@ func encodeGRPCfindUserByIDResp(_ context.Context, response interface{}) (interf
 	}, nil
 }
 
-// decodeGRPCcreateUserReq is a transport/grpc.DecodeRequestFunc that converts a
+// decodeGRPCCreateUserReq is a transport/grpc.DecodeRequestFunc that converts a
 // gRPC CreateUserReq request to a user-domain CreateUserReq request.
-func decodeGRPCcreateUserReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
+func decodeGRPCCreateUserReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	req := grpcReq.(*pb.CreateUserReq)
 	return CreateUserReq{Username: req.Username}, nil
 }
 
-// encodeGRPCcreateUserResp is a transport/grpc.EncodeResponseFunc that converts a
-// user-domain CreateUserResp response to a gRPC CreateUserResp reply.
-func encodeGRPCcreateUserResp(_ context.Context, response interface{}) (interface{}, error) {
+// encodeGRPCCreateUserResp is a transport/grpc.EncodeResponseFunc that converts a
+// user-domain CreateUserResp response to a gRPC CreateUserResp response.
+func encodeGRPCCreateUserResp(_ context.Context, response interface{}) (interface{}, error) {
 	resp := response.(CreateUserResp)
 	return &pb.CreateUserResp{
 		Error: encodeGRPCerror(resp.Err),
