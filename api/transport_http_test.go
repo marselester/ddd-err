@@ -81,7 +81,8 @@ func TestUserService_FindUserByID_notfound(t *testing.T) {
 				Message: "User not found.",
 				Inner:   sql.ErrNoRows,
 			}
-		}}
+		},
+	}
 	s := api.NewService(db)
 	h := api.NewHTTPHandler(s, log.NewNopLogger(), 100)
 	srv := httptest.NewServer(h)

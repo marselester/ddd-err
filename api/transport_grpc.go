@@ -3,25 +3,35 @@ package api
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/ratelimit"
 	grpctransport "github.com/go-kit/kit/transport/grpc"
+	"golang.org/x/time/rate"
 
 	account "github.com/marselester/ddd-err"
 	pb "github.com/marselester/ddd-err/rpc/account"
 )
 
 // NewGRPCUserServer makes user service available as a gRPC UserServer.
-func NewGRPCUserServer(s account.UserService, logger log.Logger) pb.UserServer {
+func NewGRPCUserServer(s account.UserService, logger log.Logger, qps int) pb.UserServer {
 	options := []grpctransport.ServerOption{
 		grpctransport.ServerErrorLogger(logger),
 	}
+	// limiter throttles requests that exceeded qps requests per second.
+	// For example, when qps is 100, there might be max 100 requests per seconds to
+	// all the API endpoints combined.
+	limiter := ratelimit.NewErroringLimiter(rate.NewLimiter(
+		rate.Every(time.Second), qps,
+	))
 
 	srv := userServer{}
 	var ep endpoint.Endpoint
 	{
 		ep = makeFindUserByIDEndpoint(s)
+		ep = limiter(ep)
 		srv.findUserByIDHandler = grpctransport.NewServer(
 			ep,
 			decodeGRPCFindUserByIDReq,
@@ -31,6 +41,7 @@ func NewGRPCUserServer(s account.UserService, logger log.Logger) pb.UserServer {
 	}
 	{
 		ep = makeCreateUserEndpoint(s)
+		ep = limiter(ep)
 		srv.createUserHandler = grpctransport.NewServer(
 			ep,
 			decodeGRPCCreateUserReq,
@@ -52,7 +63,9 @@ type userServer struct {
 func (srv *userServer) FindUserByID(ctx context.Context, req *pb.FindUserByIDReq) (*pb.FindUserByIDResp, error) {
 	_, resp, err := srv.findUserByIDHandler.ServeGRPC(ctx, req)
 	if err != nil {
-		return nil, err
+		return &pb.FindUserByIDResp{
+			Error: encodeGRPCerror(err),
+		}, nil
 	}
 	return resp.(*pb.FindUserByIDResp), nil
 }
@@ -61,7 +74,9 @@ func (srv *userServer) FindUserByID(ctx context.Context, req *pb.FindUserByIDReq
 func (srv *userServer) CreateUser(ctx context.Context, req *pb.CreateUserReq) (*pb.CreateUserResp, error) {
 	_, resp, err := srv.createUserHandler.ServeGRPC(ctx, req)
 	if err != nil {
-		return nil, err
+		return &pb.CreateUserResp{
+			Error: encodeGRPCerror(err),
+		}, nil
 	}
 	return resp.(*pb.CreateUserResp), nil
 }
@@ -101,6 +116,7 @@ func encodeGRPCCreateUserResp(_ context.Context, response interface{}) (interfac
 }
 
 // encodeGRPCerror encodes domain error into gRPC error.
+// It also encodes errors returned by grpctransport.Handler (e.g., ratelimit).
 func encodeGRPCerror(err error) *pb.Error {
 	if err == nil {
 		return nil
@@ -108,9 +124,16 @@ func encodeGRPCerror(err error) *pb.Error {
 
 	var accErr account.Error
 	if !errors.As(err, &accErr) {
-		accErr = account.Error{
-			Code:    account.EInternal,
-			Message: "An internal error has occurred.",
+		if errors.Is(err, ratelimit.ErrLimited) {
+			accErr = account.Error{
+				Code:    account.ERateLimit,
+				Message: "API rate limit exceeded.",
+			}
+		} else {
+			accErr = account.Error{
+				Code:    account.EInternal,
+				Message: "An internal error has occurred.",
+			}
 		}
 	}
 

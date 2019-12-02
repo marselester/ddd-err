@@ -91,7 +91,7 @@ func main() {
 	grpcserver := grpc.NewServer()
 	pb.RegisterUserServer(
 		grpcserver,
-		api.NewGRPCUserServer(s, logger),
+		api.NewGRPCUserServer(s, logger, *apiQPS),
 	)
 	// gRPC reflection provides information about publicly-accessible gRPC services on a server,
 	// and assists clients at runtime to construct RPC requests and responses
@@ -126,8 +126,8 @@ func main() {
 			return grpcserver.Serve(grpcListener)
 		}, func(err error) {
 			logger.Log("msg", "gRPC server was interrupted", "err", err)
-			err = grpcListener.Close()
-			logger.Log("msg", "gRPC server shut down", "err", err)
+			grpcserver.GracefulStop()
+			logger.Log("msg", "gRPC server shut down")
 		})
 	}
 	err = g.Run()
