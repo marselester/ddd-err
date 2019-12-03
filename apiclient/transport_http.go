@@ -65,7 +65,7 @@ func decodeHTTPCreateUserResp(_ context.Context, r *http.Response) (interface{},
 	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
 		return resp, err
 	}
-	// Only errors returned by endpoint count against the circuit breaker's error count.
+	// Only certain errors returned by endpoint count against the circuit breaker's error count.
 	e := resp.Err.(*account.Error)
 	switch account.ErrorCode(*e) {
 	case account.ERateLimit, account.EInternal:
@@ -81,7 +81,7 @@ func decodeHTTPFindUserByIDResp(_ context.Context, r *http.Response) (interface{
 	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
 		return resp, err
 	}
-	// Only errors returned by endpoint count against the circuit breaker's error count.
+	// Only certain errors returned by endpoint count against the circuit breaker's error count.
 	e := resp.Err.(*account.Error)
 	switch account.ErrorCode(*e) {
 	case account.ERateLimit, account.EInternal:

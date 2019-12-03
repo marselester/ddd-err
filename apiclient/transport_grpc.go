@@ -3,8 +3,10 @@ package apiclient
 import (
 	"context"
 
+	"github.com/go-kit/kit/circuitbreaker"
 	"github.com/go-kit/kit/endpoint"
 	grpctransport "github.com/go-kit/kit/transport/grpc"
+	"github.com/sony/gobreaker"
 	"google.golang.org/grpc"
 
 	account "github.com/marselester/ddd-err"
@@ -26,6 +28,9 @@ func NewGRPCUserClient(conn *grpc.ClientConn) account.UserService {
 			decodeGRPCFindUserByIDResp,
 			pb.FindUserByIDResp{},
 		).Endpoint()
+		ep = circuitbreaker.Gobreaker(gobreaker.NewCircuitBreaker(gobreaker.Settings{
+			Name: "FindUserByID",
+		}))(ep)
 		c.findUserByIDEndpoint = ep
 	}
 	{
@@ -37,6 +42,9 @@ func NewGRPCUserClient(conn *grpc.ClientConn) account.UserService {
 			decodeGRPCCreateUserResp,
 			pb.CreateUserResp{},
 		).Endpoint()
+		ep = circuitbreaker.Gobreaker(gobreaker.NewCircuitBreaker(gobreaker.Settings{
+			Name: "CreateUser",
+		}))(ep)
 		c.createUserEndpoint = ep
 	}
 	return &c
@@ -61,13 +69,19 @@ func decodeGRPCFindUserByIDResp(_ context.Context, grpcResp interface{}) (interf
 			Username: resp.Username,
 		}, nil
 	}
+
 	// Decode gRPC error into domain error.
-	return api.FindUserByIDResp{
-		Err: account.Error{
-			Code:    resp.Error.Code,
-			Message: resp.Error.Message,
-		},
-	}, nil
+	e := account.Error{
+		Code:    resp.Error.Code,
+		Message: resp.Error.Message,
+	}
+	apiResp := api.FindUserByIDResp{Err: e}
+	// Only certain errors returned by endpoint count against the circuit breaker's error count.
+	switch account.ErrorCode(e) {
+	case account.ERateLimit, account.EInternal:
+		return apiResp, e
+	}
+	return apiResp, nil
 }
 
 // encodeGRPCCreateUserReq is a transport/grpc.EncodeRequestFunc that converts
@@ -86,11 +100,17 @@ func decodeGRPCCreateUserResp(_ context.Context, grpcResp interface{}) (interfac
 	if resp.Error == nil {
 		return api.CreateUserResp{}, nil
 	}
+
 	// Decode gRPC error into domain error.
-	return api.CreateUserResp{
-		Err: account.Error{
-			Code:    resp.Error.Code,
-			Message: resp.Error.Message,
-		},
-	}, nil
+	e := account.Error{
+		Code:    resp.Error.Code,
+		Message: resp.Error.Message,
+	}
+	apiResp := api.CreateUserResp{Err: e}
+	// Only certain errors returned by endpoint count against the circuit breaker's error count.
+	switch account.ErrorCode(e) {
+	case account.ERateLimit, account.EInternal:
+		return apiResp, e
+	}
+	return apiResp, nil
 }
