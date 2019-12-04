@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
@@ -24,7 +23,7 @@ func NewGRPCUserServer(s account.UserService, logger log.Logger, qps int) pb.Use
 	// For example, when qps is 100, there might be max 100 requests per seconds to
 	// all the API endpoints combined.
 	limiter := ratelimit.NewErroringLimiter(rate.NewLimiter(
-		rate.Every(time.Second), qps,
+		rate.Limit(qps), qps,
 	))
 
 	srv := userServer{}
