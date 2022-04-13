@@ -12,7 +12,8 @@ According to the article error consumers have different expectations:
 - app itself can recover from error states using error codes.
 - operator should be able to debug and see all errors including stack trace.
 
-Let's start the API server and see that in action.
+Let's start the API server and see that in action,
+but before beginning make sure to [generate gRPC code](docs/grpc.md).
 
 ```sh
 $ go run ./cmd/server/
@@ -148,6 +149,7 @@ and logs the full error for operators
 ## Testing
 
 To run tests you will need Postgres and test env variables set up.
+Also make sure to [generate gRPC code](docs/grpc.md).
 
 ```sh
 $ make docker_run_postgres
