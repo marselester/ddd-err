@@ -25,7 +25,7 @@ func TestGRPCUserService_ratelimit(t *testing.T) {
 
 	grpcListener := bufconn.Listen(1024)
 	grpcserver := grpc.NewServer()
-	pb.RegisterUserServer(grpcserver, usrSrv)
+	pb.RegisterUserServiceServer(grpcserver, usrSrv)
 	go func() {
 		if err := grpcserver.Serve(grpcListener); err != nil {
 			t.Errorf("grpc serve failed: %v", err)
@@ -66,7 +66,7 @@ func TestGRPCUserService_FindUserByID_invalid_user_id(t *testing.T) {
 
 	grpcListener := bufconn.Listen(1024)
 	grpcserver := grpc.NewServer()
-	pb.RegisterUserServer(grpcserver, usrSrv)
+	pb.RegisterUserServiceServer(grpcserver, usrSrv)
 	go func() {
 		if err := grpcserver.Serve(grpcListener); err != nil {
 			t.Errorf("grpc serve failed: %v", err)
@@ -113,7 +113,7 @@ func TestGRPCUserService_FindUserByID_notfound(t *testing.T) {
 
 	grpcListener := bufconn.Listen(1024)
 	grpcserver := grpc.NewServer()
-	pb.RegisterUserServer(grpcserver, usrSrv)
+	pb.RegisterUserServiceServer(grpcserver, usrSrv)
 	go func() {
 		if err := grpcserver.Serve(grpcListener); err != nil {
 			t.Errorf("grpc serve failed: %v", err)
@@ -174,7 +174,7 @@ func TestGRPCUserService_CreateUser_validation(t *testing.T) {
 
 	grpcListener := bufconn.Listen(1024)
 	grpcserver := grpc.NewServer()
-	pb.RegisterUserServer(grpcserver, usrSrv)
+	pb.RegisterUserServiceServer(grpcserver, usrSrv)
 	go func() {
 		if err := grpcserver.Serve(grpcListener); err != nil {
 			t.Errorf("grpc serve failed: %v", err)
@@ -214,7 +214,7 @@ func TestGRPCUserService_CreateUser_dberror(t *testing.T) {
 
 	grpcListener := bufconn.Listen(1024)
 	grpcserver := grpc.NewServer()
-	pb.RegisterUserServer(grpcserver, usrSrv)
+	pb.RegisterUserServiceServer(grpcserver, usrSrv)
 	go func() {
 		if err := grpcserver.Serve(grpcListener); err != nil {
 			t.Errorf("grpc serve failed: %v", err)

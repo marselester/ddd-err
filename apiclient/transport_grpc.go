@@ -26,7 +26,7 @@ func NewGRPCUserClient(conn *grpc.ClientConn) account.UserService {
 			"FindUserByID",
 			encodeGRPCFindUserByIDReq,
 			decodeGRPCFindUserByIDResp,
-			pb.FindUserByIDResp{},
+			pb.FindUserByIDResponse{},
 		).Endpoint()
 		ep = circuitbreaker.Gobreaker(gobreaker.NewCircuitBreaker(gobreaker.Settings{
 			Name: "FindUserByID",
@@ -40,7 +40,7 @@ func NewGRPCUserClient(conn *grpc.ClientConn) account.UserService {
 			"CreateUser",
 			encodeGRPCCreateUserReq,
 			decodeGRPCCreateUserResp,
-			pb.CreateUserResp{},
+			pb.CreateUserResponse{},
 		).Endpoint()
 		ep = circuitbreaker.Gobreaker(gobreaker.NewCircuitBreaker(gobreaker.Settings{
 			Name: "CreateUser",
@@ -54,7 +54,7 @@ func NewGRPCUserClient(conn *grpc.ClientConn) account.UserService {
 // a user-domain FindUserByIDReq to a gRPC FindUserByIDReq.
 func encodeGRPCFindUserByIDReq(_ context.Context, request interface{}) (interface{}, error) {
 	req := request.(api.FindUserByIDReq)
-	return &pb.FindUserByIDReq{
+	return &pb.FindUserByIDRequest{
 		Id: req.ID,
 	}, nil
 }
@@ -62,7 +62,7 @@ func encodeGRPCFindUserByIDReq(_ context.Context, request interface{}) (interfac
 // decodeGRPCFindUserByIDResp is a transport/grpc.DecodeResponseFunc that converts a
 // gRPC FindUserByIDResp to a user-domain FindUserByIDResp.
 func decodeGRPCFindUserByIDResp(_ context.Context, grpcResp interface{}) (interface{}, error) {
-	resp := grpcResp.(*pb.FindUserByIDResp)
+	resp := grpcResp.(*pb.FindUserByIDResponse)
 	if resp.Error == nil {
 		return api.FindUserByIDResp{
 			ID:       resp.Id,
@@ -88,7 +88,7 @@ func decodeGRPCFindUserByIDResp(_ context.Context, grpcResp interface{}) (interf
 // a user-domain CreateUserReq to a gRPC CreateUserReq.
 func encodeGRPCCreateUserReq(_ context.Context, request interface{}) (interface{}, error) {
 	req := request.(api.CreateUserReq)
-	return &pb.CreateUserReq{
+	return &pb.CreateUserRequest{
 		Username: req.Username,
 	}, nil
 }
@@ -96,7 +96,7 @@ func encodeGRPCCreateUserReq(_ context.Context, request interface{}) (interface{
 // decodeGRPCCreateUserResp is a transport/grpc.DecodeResponseFunc that converts a
 // gRPC CreateUserResp to a user-domain CreateUserResp.
 func decodeGRPCCreateUserResp(_ context.Context, grpcResp interface{}) (interface{}, error) {
-	resp := grpcResp.(*pb.CreateUserResp)
+	resp := grpcResp.(*pb.CreateUserResponse)
 	if resp.Error == nil {
 		return api.CreateUserResp{}, nil
 	}

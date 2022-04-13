@@ -15,7 +15,7 @@ import (
 )
 
 // NewGRPCUserServer makes user service available as a gRPC UserServer.
-func NewGRPCUserServer(s account.UserService, logger log.Logger, qps int) pb.UserServer {
+func NewGRPCUserServer(s account.UserService, logger log.Logger, qps int) pb.UserServiceServer {
 	options := []grpctransport.ServerOption{
 		grpctransport.ServerErrorLogger(logger),
 	}
@@ -56,35 +56,35 @@ func NewGRPCUserServer(s account.UserService, logger log.Logger, qps int) pb.Use
 type userServer struct {
 	findUserByIDHandler grpctransport.Handler
 	createUserHandler   grpctransport.Handler
-	pb.UnimplementedUserServer
+	pb.UnimplementedUserServiceServer
 }
 
 // FindUserByID looks up a user by ID.
-func (srv *userServer) FindUserByID(ctx context.Context, req *pb.FindUserByIDReq) (*pb.FindUserByIDResp, error) {
+func (srv *userServer) FindUserByID(ctx context.Context, req *pb.FindUserByIDRequest) (*pb.FindUserByIDResponse, error) {
 	_, resp, err := srv.findUserByIDHandler.ServeGRPC(ctx, req)
 	if err != nil {
-		return &pb.FindUserByIDResp{
+		return &pb.FindUserByIDResponse{
 			Error: encodeGRPCerror(err),
 		}, nil
 	}
-	return resp.(*pb.FindUserByIDResp), nil
+	return resp.(*pb.FindUserByIDResponse), nil
 }
 
 // CreateUser creates a user.
-func (srv *userServer) CreateUser(ctx context.Context, req *pb.CreateUserReq) (*pb.CreateUserResp, error) {
+func (srv *userServer) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	_, resp, err := srv.createUserHandler.ServeGRPC(ctx, req)
 	if err != nil {
-		return &pb.CreateUserResp{
+		return &pb.CreateUserResponse{
 			Error: encodeGRPCerror(err),
 		}, nil
 	}
-	return resp.(*pb.CreateUserResp), nil
+	return resp.(*pb.CreateUserResponse), nil
 }
 
 // decodeGRPCFindUserByIDReq is a transport/grpc.DecodeRequestFunc that converts a
 // gRPC FindUserByIDReq request to a user-domain FindUserByIDReq request.
 func decodeGRPCFindUserByIDReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
-	req := grpcReq.(*pb.FindUserByIDReq)
+	req := grpcReq.(*pb.FindUserByIDRequest)
 	return FindUserByIDReq{ID: req.Id}, nil
 }
 
@@ -92,7 +92,7 @@ func decodeGRPCFindUserByIDReq(_ context.Context, grpcReq interface{}) (interfac
 // user-domain FindUserByIDResp response to a gRPC FindUserByIDResp response.
 func encodeGRPCFindUserByIDResp(_ context.Context, response interface{}) (interface{}, error) {
 	resp := response.(FindUserByIDResp)
-	return &pb.FindUserByIDResp{
+	return &pb.FindUserByIDResponse{
 		Id:       resp.ID,
 		Username: resp.Username,
 		Error:    encodeGRPCerror(resp.Err),
@@ -102,7 +102,7 @@ func encodeGRPCFindUserByIDResp(_ context.Context, response interface{}) (interf
 // decodeGRPCCreateUserReq is a transport/grpc.DecodeRequestFunc that converts a
 // gRPC CreateUserReq request to a user-domain CreateUserReq request.
 func decodeGRPCCreateUserReq(_ context.Context, grpcReq interface{}) (interface{}, error) {
-	req := grpcReq.(*pb.CreateUserReq)
+	req := grpcReq.(*pb.CreateUserRequest)
 	return CreateUserReq{Username: req.Username}, nil
 }
 
@@ -110,7 +110,7 @@ func decodeGRPCCreateUserReq(_ context.Context, grpcReq interface{}) (interface{
 // user-domain CreateUserResp response to a gRPC CreateUserResp response.
 func encodeGRPCCreateUserResp(_ context.Context, response interface{}) (interface{}, error) {
 	resp := response.(CreateUserResp)
-	return &pb.CreateUserResp{
+	return &pb.CreateUserResponse{
 		Error: encodeGRPCerror(resp.Err),
 	}, nil
 }

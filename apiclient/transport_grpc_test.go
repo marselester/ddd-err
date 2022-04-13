@@ -46,7 +46,7 @@ func TestGRPCUserService_circuitbreaker(t *testing.T) {
 
 	grpcListener := bufconn.Listen(1024)
 	grpcserver := grpc.NewServer()
-	pb.RegisterUserServer(grpcserver, usrSrv)
+	pb.RegisterUserServiceServer(grpcserver, usrSrv)
 	go func() {
 		if err := grpcserver.Serve(grpcListener); err != nil {
 			t.Errorf("grpc serve failed: %v", err)

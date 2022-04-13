@@ -89,7 +89,7 @@ func main() {
 		os.Exit(1)
 	}
 	grpcserver := grpc.NewServer()
-	pb.RegisterUserServer(
+	pb.RegisterUserServiceServer(
 		grpcserver,
 		api.NewGRPCUserServer(s, logger, *apiQPS),
 	)

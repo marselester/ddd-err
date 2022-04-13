@@ -33,23 +33,28 @@ We now have newly generated gRPC server and client code in `./rpc/account/accoun
 $ go doc ./rpc/account/
 package account // import "github.com/marselester/ddd-err/rpc/account"
 
-func RegisterGroupServer(s *grpc.Server, srv GroupServer)
-func RegisterUserServer(s *grpc.Server, srv UserServer)
-type CreateGroupReq struct{ ... }
-type CreateGroupResp struct{ ... }
-type CreateUserReq struct{ ... }
-type CreateUserResp struct{ ... }
+var File_rpc_account_account_proto protoreflect.FileDescriptor
+var GroupService_ServiceDesc = grpc.ServiceDesc{ ... }
+var UserService_ServiceDesc = grpc.ServiceDesc{ ... }
+func RegisterGroupServiceServer(s grpc.ServiceRegistrar, srv GroupServiceServer)
+func RegisterUserServiceServer(s grpc.ServiceRegistrar, srv UserServiceServer)
+type CreateGroupRequest struct{ ... }
+type CreateGroupResponse struct{ ... }
+type CreateUserRequest struct{ ... }
+type CreateUserResponse struct{ ... }
 type Error struct{ ... }
-type FindUserByIDReq struct{ ... }
-type FindUserByIDResp struct{ ... }
-type GroupClient interface{ ... }
-    func NewGroupClient(cc *grpc.ClientConn) GroupClient
-type GroupServer interface{ ... }
-type UnimplementedGroupServer struct{}
-type UnimplementedUserServer struct{}
-type UserClient interface{ ... }
-    func NewUserClient(cc *grpc.ClientConn) UserClient
-type UserServer interface{ ... }
+type FindUserByIDRequest struct{ ... }
+type FindUserByIDResponse struct{ ... }
+type GroupServiceClient interface{ ... }
+    func NewGroupServiceClient(cc grpc.ClientConnInterface) GroupServiceClient
+type GroupServiceServer interface{ ... }
+type UnimplementedGroupServiceServer struct{}
+type UnimplementedUserServiceServer struct{}
+type UnsafeGroupServiceServer interface{ ... }
+type UnsafeUserServiceServer interface{ ... }
+type UserServiceClient interface{ ... }
+    func NewUserServiceClient(cc grpc.ClientConnInterface) UserServiceClient
+type UserServiceServer interface{ ... }
 ```
 
 ## Convention
@@ -81,31 +86,78 @@ rpc/auth/auth.proto
 ## grpcurl
 
 [grpcurl](https://github.com/fullstorydev/grpcurl) is like cURL, but for gRPC.
-Install it from source
 
 ```sh
-$ go get github.com/fullstorydev/grpcurl
-$ go install github.com/fullstorydev/grpcurl/cmd/grpcurl
+$ brew install grpcurl
 ```
 
-and you're ready to send requests to the gRPC server. Note, your server must support
+Note, your server must support
 [reflection](https://github.com/grpc/grpc-go/blob/master/Documentation/server-reflection-tutorial.md).
 
 ```sh
 $ go run ./cmd/server/main.go
 $ grpcurl -plaintext localhost:8080 list
-ddd_err.account.User
+ddd_err.account.UserService
 grpc.reflection.v1alpha.ServerReflection
 ```
 
 Check if user with "123" ID exists
 
 ```sh
-$ grpcurl -d '{"id": "123"}' -plaintext localhost:8080 ddd_err.account.User/FindUserByID
+$ grpcurl -d '{"id": "123"}' -plaintext localhost:8080 ddd_err.account.UserService/FindUserByID
 {
   "error": {
     "message": "Invalid user ID.",
     "code": "invalid_user_id"
   }
 }
+```
+
+## Buf
+
+[Buf CLI](https://docs.buf.build/tour/introduction) helps to lint proto files, detect breaking changes, and generate code.
+There is also Buf Schema Registry in case you don't like manually copying proto files between projects.
+
+```sh
+$ brew install bufbuild/buf/buf
+```
+
+The `buf.gen.yaml` file controls how the `buf generate` command executes `protoc` plugins.
+Here it executes the `protoc-gen-go`, `protoc-gen-go-grpc` plugins and places Go code in the `rpc` directory.
+
+```sh
+$ echo 'version: v1
+plugins:
+  - name: go
+    out: rpc
+  - name: go-grpc
+    out: rpc' > buf.gen.yaml
+$ buf generate
+```
+
+Verify and lint the proto files.
+
+```sh
+$ buf build
+$ buf lint
+rpc/account/account.proto:2:1:Files with package "ddd_err.account" must be within a directory "ddd_err/account" relative to root but were in directory "rpc/account".
+rpc/account/account.proto:2:1:Package name "ddd_err.account" should be suffixed with a correctly formed version, such as "ddd_err.account.v1".
+rpc/auth/auth.proto:2:1:Files with package "ddd_auth.auth" must be within a directory "ddd_auth/auth" relative to root but were in directory "rpc/auth".
+rpc/auth/auth.proto:2:1:Package name "ddd_auth.auth" should be suffixed with a correctly formed version, such as "ddd_auth.auth.v1".
+```
+
+You can set lint exceptions in `buf.yaml`.
+The placement of the `buf.yaml` is analogous to a `protoc ... -I rpc/account/`.
+
+```sh
+$ cd ./rpc/account/
+$ buf mod init # It creates ./rpc/account/buf.yaml.
+$ cat buf.yaml
+version: v1
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT
 ```
