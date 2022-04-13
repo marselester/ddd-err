@@ -1,25 +1,33 @@
 # gRPC
 
 Similar to RESTful API based on Go kit, the service also supports gRPC transport.
-Have a look at [Go kit gRPC example](https://github.com/go-kit/kit/blob/master/examples/addsvc/pkg/addtransport/grpc.go).
+Have a look at [Go kit gRPC example](https://github.com/go-kit/examples/blob/master/addsvc/pkg/addtransport/grpc.go).
 
 The protocol buffer definitions of User and Group services are described in `./rpc/account/account.proto`.
-You need to [install](https://grpc.io/docs/quickstart/go.html) protoc compiler and protoc plugin for Go
+You need to [install](https://grpc.io/docs/quickstart/go.html) protoc compiler and protoc plugins for Go and gRPC to generate code.
 
 ```sh
 $ brew install protobuf
-$ go get -u github.com/golang/protobuf/protoc-gen-go
+$ go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+$ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 ```
 
-to generate gRPC service code. The arguments tell protoc to use `account.proto` definition,
-search for imports in `./rpc/account/` dir, generate Go code using gprc plugin,
-and place the result in `./rpc/account/` dir.
+The arguments tell `protoc` to use `account.proto` definition
+from within the `./rpc/account/` directory,
+generate Go code using Go and gRPC plugins,
+and place the result to the `./rpc/` directory.
 
 ```sh
+$ protoc account.proto --proto_path=./rpc/account/ --go_out=./rpc/ --go-grpc_out=./rpc/
+
+# This also works.
+$ protoc ./rpc/account/*.proto --go_out=./rpc/ --go-grpc_out=./rpc/
+# The old way no longer works.
 $ protoc account.proto -I rpc/account/ --go_out=plugins=grpc:rpc/account/
+--go_out: protoc-gen-go: plugins are not supported; use 'protoc --go-grpc_out=...' to generate gRPC
 ```
 
-We now have newly generated gRPC server and client code in `./rpc/account/account.pb.go`.
+We now have newly generated gRPC server and client code in `./rpc/account/account_grpc.pb.go`.
 
 ```
 $ go doc ./rpc/account/

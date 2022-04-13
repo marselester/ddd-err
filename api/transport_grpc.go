@@ -56,6 +56,7 @@ func NewGRPCUserServer(s account.UserService, logger log.Logger, qps int) pb.Use
 type userServer struct {
 	findUserByIDHandler grpctransport.Handler
 	createUserHandler   grpctransport.Handler
+	pb.UnimplementedUserServer
 }
 
 // FindUserByID looks up a user by ID.

@@ -1,6 +1,6 @@
 syntax = "proto3";
 package ddd_err.account;
-option go_package = "account";
+option go_package = "./account";
 
 service User {
   rpc FindUserByID(FindUserByIDReq) returns (FindUserByIDResp);
