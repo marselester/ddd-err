@@ -3,7 +3,7 @@
 [![Documentation](https://godoc.org/github.com/marselester/ddd-err?status.svg)](https://godoc.org/github.com/marselester/ddd-err)
 [![Go Report Card](https://goreportcard.com/badge/github.com/marselester/ddd-err)](https://goreportcard.com/report/github.com/marselester/ddd-err)
 
-This is Go 1.13 error handling example based on Ben Johnson's
+This is Go error handling example based on Ben Johnson's
 [Failure is your Domain](https://middlemost.com/failure-is-your-domain/).
 According to the article error consumers have different expectations:
 

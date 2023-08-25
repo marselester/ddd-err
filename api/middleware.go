@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 
 	account "github.com/marselester/ddd-err"
 )

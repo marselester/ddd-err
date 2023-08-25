@@ -5,13 +5,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 
 	account "github.com/marselester/ddd-err"
 	"github.com/marselester/ddd-err/api"
@@ -37,7 +37,7 @@ func TestUserService_ratelimit(t *testing.T) {
 		t.Fatalf("FindUserByID status code: %d, want %d", resp.StatusCode, http.StatusTooManyRequests)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
 		t.Fatal(err)
@@ -62,7 +62,7 @@ func TestUserService_FindUserByID_invalid_user_id(t *testing.T) {
 		t.Fatalf("FindUserByID status code: %d, want %d", resp.StatusCode, http.StatusNotFound)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
 		t.Fatal(err)
@@ -96,7 +96,7 @@ func TestUserService_FindUserByID_notfound(t *testing.T) {
 		t.Fatalf("FindUserByID status code: %d, want %d", resp.StatusCode, http.StatusNotFound)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
 		t.Fatal(err)
@@ -154,7 +154,7 @@ func TestUserService_CreateUser_validation(t *testing.T) {
 			t.Fatalf("CreateUser status code: %d, want %d", resp.StatusCode, tc.statusCode)
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
 			t.Fatal(err)
@@ -187,7 +187,7 @@ func TestUserService_CreateUser_dberror(t *testing.T) {
 		t.Fatalf("CreateUser status code: %d, want %d", resp.StatusCode, http.StatusInternalServerError)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
 		t.Fatal(err)

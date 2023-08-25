@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"github.com/oklog/run"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"

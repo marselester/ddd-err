@@ -5,9 +5,9 @@ import (
 	"errors"
 
 	"github.com/go-kit/kit/endpoint"
-	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/ratelimit"
 	grpctransport "github.com/go-kit/kit/transport/grpc"
+	"github.com/go-kit/log"
 	"golang.org/x/time/rate"
 
 	account "github.com/marselester/ddd-err"
