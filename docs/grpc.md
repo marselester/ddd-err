@@ -5,6 +5,7 @@ Have a look at [Go kit gRPC example](https://github.com/go-kit/examples/blob/mas
 
 The protocol buffer definitions of User and Group services are described in `./rpc/account/account.proto`.
 You need to [install](https://grpc.io/docs/quickstart/go.html) protoc compiler and protoc plugins for Go and gRPC to generate code.
+Alternatively, you can use [Buf CLI](#buf) `buf generate`.
 
 ```sh
 $ brew install protobuf

@@ -13,7 +13,7 @@ According to the article error consumers have different expectations:
 - operator should be able to debug and see all errors including stack trace.
 
 Let's start the API server and see that in action,
-but before beginning make sure to [generate gRPC code](docs/grpc.md).
+but before beginning make sure to [generate gRPC code](docs/grpc.md), e.g., `buf generate`.
 
 ```sh
 $ go run ./cmd/server/

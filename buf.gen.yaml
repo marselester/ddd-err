@@ -1,0 +1,6 @@
+version: v1
+plugins:
+  - name: go
+    out: rpc
+  - name: go-grpc
+    out: rpc
