@@ -30,6 +30,9 @@ func main() {
 	grpcAddr := flag.String("grpc", ":8080", "gRPC API address")
 	flag.Parse()
 
+	exitCode := 1
+	defer func() { os.Exit(exitCode) }()
+
 	var logger log.Logger
 	{
 		logger = log.NewJSONLogger(log.NewSyncWriter(os.Stderr))
@@ -86,7 +89,7 @@ func main() {
 	grpcListener, err := net.Listen("tcp", *grpcAddr)
 	if err != nil {
 		logger.Log("msg", "could not listen to gRPC port", "err", err)
-		os.Exit(1)
+		return
 	}
 	grpcserver := grpc.NewServer()
 	pb.RegisterUserServiceServer(
@@ -132,4 +135,6 @@ func main() {
 	}
 	err = g.Run()
 	logger.Log("msg", "actors stopped", "err", err)
+
+	exitCode = 0
 }

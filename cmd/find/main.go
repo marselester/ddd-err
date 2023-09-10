@@ -5,10 +5,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 
+	"github.com/go-kit/log"
 	"google.golang.org/grpc"
 
 	"github.com/marselester/ddd-err/apiclient"
@@ -18,8 +18,20 @@ func main() {
 	grpcAddr := flag.String("grpc", ":8080", "gRPC API address")
 	userID := flag.String("user-id", "", "user ID to look for")
 	flag.Parse()
+
+	exitCode := 1
+	defer func() { os.Exit(exitCode) }()
+
+	var logger log.Logger
+	{
+		logger = log.NewJSONLogger(log.NewSyncWriter(os.Stderr))
+		logger = log.With(logger, "ts", log.DefaultTimestampUTC)
+		logger = log.With(logger, "caller", log.DefaultCaller)
+	}
+
 	if *userID == "" {
-		log.Fatal("user ID is required")
+		logger.Log("msg", "user ID is required")
+		return
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -33,15 +45,19 @@ func main() {
 
 	conn, err := grpc.DialContext(ctx, *grpcAddr, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("grpc dial failed: %v", err)
+		logger.Log("msg", "grpc dial", "err", err)
+		return
 	}
 	defer conn.Close()
 
 	svc := apiclient.NewGRPCUserClient(conn)
 	user, err := svc.FindUserByID(ctx, *userID)
 	if err != nil {
-		log.Fatalf("user search failed: %v", err)
+		logger.Log("msg", "user search", "err", err)
+		return
 	}
 
 	fmt.Println(user.Username)
+
+	exitCode = 0
 }
